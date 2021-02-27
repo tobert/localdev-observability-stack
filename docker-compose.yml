@@ -1,6 +1,7 @@
 version: '2.1'
   # OpenTelemetry collector is the "frontend" of this stack, configured
   # to receive on popular supported protocols and forward to Tempo.
+  # TODO: open up all the popular protocols for ingest
   otel-collector:
     image: public.ecr.aws/aws-observability/aws-otel-collector:latest
     ports:
@@ -14,6 +15,9 @@ version: '2.1'
 
   # Grafana Tempo backend for storing traces & spans
   # listens for gRPC OTLP on port 55683, see configs/tempo.yaml
+  # Note: within docker-compose the rest of the stack can report
+  # telemetry directly to Tempo so it doesn't leak out into external
+  # receivers when traffic is forked at the collector.
   tempo:
     image: grafana/tempo:latest
     ports:
