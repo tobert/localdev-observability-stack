@@ -16,8 +16,15 @@ Some stuff I'm not sure about maybe y'all know.
 
    * what's the best way to get promtail to slurp logs from a separate docker-compose instance running my service code?
    * how do I make the right URL for getting to Grafana obvious and accessible?
+   * is it fine to let the collector just keep trying to call out to vendors and fail?
 
 # PR Ideas
 
    * add prometheus and wire up the metrics path through the otel collector
+
+# Goals
+
+`docker-compose up` gets you a functional observability stack that does not require an internet connection after the first `up`.
+
+examples of how folks can plumb their data into this stack from docker, docker-compose, and whatever kids these days are into
 
