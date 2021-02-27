@@ -1,4 +1,5 @@
 version: '2.1'
+services:
   # OpenTelemetry collector is the "frontend" of this stack, configured
   # to receive on popular supported protocols and forward to Tempo.
   # TODO: open up all the popular protocols for ingest
