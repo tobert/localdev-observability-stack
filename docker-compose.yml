@@ -1,0 +1,68 @@
+version: '2.1'
+  # OpenTelemetry collector is the "frontend" of this stack, configured
+  # to receive on popular supported protocols and forward to Tempo.
+  otel-collector:
+    image: public.ecr.aws/aws-observability/aws-otel-collector:latest
+    ports:
+      # TODO: double-check my knowledge and write descriptive comments for ports
+      - 55680:55680 # OTLP 
+      - 55681:55681 # OTLP
+      - 6831:6831/udp # Jaeger
+    volumes:
+      - ./configs/otel-collector.yaml:/config.yaml
+    command: --config /config.yaml
+
+  # Grafana Tempo backend for storing traces & spans
+  # listens for gRPC OTLP on port 55683, see configs/tempo.yaml
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - 8004:3101
+      - 55683:55683
+    volumes:
+      - ./configs/tempo.yaml:/config.yaml
+    command: -config.file=/config.yaml
+
+  # Jaeger frontend for Grafana Tempo will be on http://$ip:16686
+  # TODO: figure out how to make this easy to discover / access
+  tempo-query:
+    image: grafana/tempo-query:latest
+    depends_on:
+      - tempo
+    ports:
+      - 16686:16686
+    volumes:
+      - ./configs/tempo-query.yaml:/config.yaml
+    command: --grpc-storage-plugin.configuration-file=/config.yaml
+
+  # Grafana Loki is like Prometheus for logs
+  # TODO: write some nice promtail examples for the repo to ingest
+  # e.g. docker-compose, docker, and other logs into Loki
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./configs/loki.yaml:/config.yaml
+    command: -config.file=/config.yaml
+
+  # TODO: make this more useful for rando users out there in the world
+  #promtail:
+  #  image: grafana/promtail:2.0.0
+  #  volumes:
+  #    - ./log:/var/log
+  #  command: -config.file=/etc/promtail/config.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      # TODO: document security implications in the README
+      # (not a big deal I just like to be clear when stuff like this is default)
+      - "0.0.0.0:3000:3000"
+    volumes:
+      - ./configs/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      # TODO: document security implications in README
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true

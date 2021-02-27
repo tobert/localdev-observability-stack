@@ -1,0 +1,46 @@
+# local docker-compose config for Grafana Tempo to view otel traces
+# https://grafana.com/docs/tempo/latest/getting-started/
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3101
+
+distributor:
+  # @tobert - thinking it makes sense to turn on all the things here too
+  # so the internals of the stack can write directly to Tempo and not get
+  # egressed to an external observability stack, that seems cool
+  receivers:                           
+    # gets used by the Jaeger UI so it's handy to have it on here
+    jaeger:
+      protocols:
+        thrift_binary:
+        thrift_compact:
+    otlp:
+      protocols:
+        # frontend of the local stack is an opentelemetry collector
+        # so mainly grpc is expected to be used
+        grpc:
+          endpoint: "0.0.0.0:55683"
+        http:
+          endpoint: "0.0.0.0:55684"
+
+ingester:
+  trace_idle_period: 10s               # the length of time after a trace has not received spans to consider it complete and flush it
+
+compactor:
+  compaction:
+    compaction_window: 1h              # blocks in this time window will be compacted together
+    block_retention: 1h
+    compacted_block_retention: 10m
+
+storage:
+  trace:
+    backend: local                     # backend configuration to use
+    wal:
+      path: /tmp/tempo/wal             # where to store the the wal locally
+    local:
+      path: /tmp/tempo/blocks
+    pool:
+      max_workers: 100                 # the worker pool mainly drives querying, but is also used for polling the blocklist
+      queue_depth: 10000

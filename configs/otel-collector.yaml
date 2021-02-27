@@ -1,0 +1,49 @@
+# opentelemetry-collector can be thought of as a proxy for telemetry events.
+# It can receive metrics and traces on many protocols including OTLP and Jaeger,
+# do some processing, and forward to many observability tools.
+#
+# TODO:
+#   * add metrics back to this file at some point
+#   * add a processor hook to tag stuff as coming from a localdev stack
+#
+# This setup for local development targets Grafana Tempo
+receivers:
+  otlp/1:
+    protocols:
+      grpc/1:
+        endpoint: "0.0.0.0:55680"
+      http/1:
+        endpoint: "0.0.0.0:55681"
+
+# TODO: tag all events to make it clear it's localdev
+processors:
+  batch:
+
+exporters:
+  logging:
+    # set to debug and your traces will get printed to the console spammily
+    logLevel: info
+  # local Grafana Tempo
+  otlp/1:
+    # forwards to Tempo over gRPC which is configured locally to listen on 55683
+    # while the usual port is 55680 for gRPC
+    endpoint: "tempo:55683"
+    insecure: true
+  # honeycomb
+  # otlp/2:
+  #  endpoint: "api.honeycomb.io:443"
+  #  headers:
+  #    # TODO: figure out how to plumb the key here effectively without hardcoding
+  #    "x-honeycomb-team": "-------- your key here ---------"
+  #    "x-honeycomb-dataset": "-- your dataset name --"
+  # TODO:
+  #   * add a Lightstep example
+  #   * add Jaeger / Zipkin examples?
+  #   * others, as folks send PRs
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp/1]
+      processors: [batch]
+      exporters: [logging,otlp/1]
