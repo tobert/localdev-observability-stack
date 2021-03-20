@@ -10,9 +10,9 @@
 receivers:
   otlp/1:
     protocols:
-      grpc/1:
+      grpc:
         endpoint: "0.0.0.0:55680"
-      http/1:
+      http:
         endpoint: "0.0.0.0:55681"
 
 # TODO: tag all events to make it clear it's localdev
