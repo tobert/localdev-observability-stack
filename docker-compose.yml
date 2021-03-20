@@ -26,6 +26,7 @@ services:
       - 55683:55683
     volumes:
       - ./configs/tempo.yaml:/config.yaml
+      - tempo-storage:/var/tempo
     command: -config.file=/config.yaml
 
   # Jaeger frontend for Grafana Tempo will be on http://$ip:16686
@@ -49,6 +50,7 @@ services:
       - "3100:3100"
     volumes:
       - ./configs/loki.yaml:/config.yaml
+      - loki-storage:/loki
     command: -config.file=/config.yaml
 
   # TODO: make this more useful for rando users out there in the world
@@ -66,8 +68,14 @@ services:
       - "0.0.0.0:3000:3000"
     volumes:
       - ./configs/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana-storage:/var/lib/grafana
     environment:
       # TODO: document security implications in README
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+volumes:
+  grafana-storage: {}
+  tempo-storage: {}
+  loki-storage: {}
