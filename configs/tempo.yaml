@@ -4,7 +4,7 @@
 auth_enabled: false
 
 server:
-  http_listen_port: 3101
+  http_listen_port: 3100
 
 distributor:
   # @tobert - thinking it makes sense to turn on all the things here too
@@ -18,12 +18,10 @@ distributor:
         thrift_compact:
     otlp:
       protocols:
-        # frontend of the local stack is an opentelemetry collector
-        # so mainly grpc is expected to be used
+        # listen on the old high port so it doesn't conflict with the collector
+        # collector will forward here
         grpc:
           endpoint: "0.0.0.0:55683"
-        http:
-          endpoint: "0.0.0.0:55684"
 
 ingester:
   trace_idle_period: 10s               # the length of time after a trace has not received spans to consider it complete and flush it

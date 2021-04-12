@@ -6,13 +6,12 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib
     ports:
-      # TODO: double-check my knowledge and write descriptive comments for ports
-      - 55680:55680 # OTLP
-      - 55681:55681 # OTLP
+      - 4317:4317     # OTLP gRPC
+      - 55681:55681   # OTLP http (used by opentelemtry-ruby)
       - 6831:6831/udp # Jaeger
     volumes:
-      - ./configs/otel-collector.yaml:/config.yaml
-    command: --config /config.yaml
+      - ./configs/otel-collector.yaml:/local.yaml
+    command: --config /local.yaml
 
   # Grafana Tempo backend for storing traces & spans
   # listens for gRPC OTLP on port 55683, see configs/tempo.yaml
@@ -22,8 +21,8 @@ services:
   tempo:
     image: grafana/tempo:latest
     ports:
-      - 8004:3101
-      - 55683:55683
+      - 3100:3100   # HTTP
+      - 55683:55683 # OTLP ingest
     volumes:
       - ./configs/tempo.yaml:/config.yaml
     command: -config.file=/config.yaml
@@ -46,7 +45,7 @@ services:
   loki:
     image: grafana/loki:latest
     ports:
-      - "3100:3100"
+      - "3101:3101"
     volumes:
       - ./configs/loki.yaml:/config.yaml
     command: -config.file=/config.yaml
