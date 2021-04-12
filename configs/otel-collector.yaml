@@ -8,11 +8,11 @@
 #
 # This setup for local development targets Grafana Tempo
 receivers:
-  otlp/1:
+  otlp:
     protocols:
-      grpc/1:
-        endpoint: "0.0.0.0:55680"
-      http/1:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
         endpoint: "0.0.0.0:55681"
 
 # TODO: tag all events to make it clear it's localdev
@@ -22,7 +22,7 @@ processors:
 exporters:
   logging:
     # set to debug and your traces will get printed to the console spammily
-    logLevel: info
+    logLevel: debug
   # local Grafana Tempo
   otlp/1:
     # forwards to Tempo over gRPC which is configured locally to listen on 55683
@@ -44,6 +44,6 @@ exporters:
 service:
   pipelines:
     traces:
-      receivers: [otlp/1]
+      receivers: [otlp]
       processors: [batch]
       exporters: [logging,otlp/1]
