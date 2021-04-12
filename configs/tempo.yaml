@@ -10,7 +10,7 @@ distributor:
   # @tobert - thinking it makes sense to turn on all the things here too
   # so the internals of the stack can write directly to Tempo and not get
   # egressed to an external observability stack, that seems cool
-  receivers:                           
+  receivers:
     # gets used by the Jaeger UI so it's handy to have it on here
     jaeger:
       protocols:
@@ -36,9 +36,9 @@ storage:
   trace:
     backend: local                     # backend configuration to use
     wal:
-      path: /tmp/tempo/wal             # where to store the the wal locally
+      path: /var/tempo/wal             # where to store the the wal locally
     local:
-      path: /tmp/tempo/blocks
+      path: /var/tempo/blocks
     pool:
       max_workers: 100                 # the worker pool mainly drives querying, but is also used for polling the blocklist
       queue_depth: 10000
